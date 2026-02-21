@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZINSIDEME | ARCHIVE</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700&display=swap" rel="stylesheet">
+    <title>zinsideme</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
-    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,40 +13,40 @@
     <header id="main-header">
         <nav id="main-nav">
             <div class="nav-icon" onclick="showPage('home')">
-                <img src="img/icon1.png" alt="Home">
+                <img src="img/icon_home.png" alt="Home"><span>Home</span>
             </div>
             <div class="nav-icon" onclick="showPage('intro')">
-                <img src="img/icon2.png" alt="Intro">
+                <img src="img/icon_intro.png" alt="Intro"><span>Intro</span>
             </div>
             <div class="nav-icon" onclick="showPage('index')">
-                <img src="img/icon3.png" alt="Index">
+                <img src="img/icon_index.png" alt="Index"><span>Index</span>
             </div>
             <div class="nav-icon" onclick="showRandom()">
-                <img src="img/icon4.png" alt="Random">
+                <img src="img/icon_random.png" alt="Random"><span>Random</span>
             </div>
         </nav>
     </header>
 
     <main id="content-container">
-        <div id="home-view" class="view-section">
+        <section id="home-view" class="view-section">
             <div id='calendar'></div>
-        </div>
+        </section>
 
-        <div id="detail-view" class="view-section">
-            <button id="back-button" onclick="showPage('home')">CLOSE</button>
+        <section id="detail-view" class="view-section">
             <h1 id="detail-title"></h1>
             <div id="detail-content"></div>
-        </div>
+        </section>
 
-        <div id="intro-view" class="view-section">
+        <section id="intro-view" class="view-section">
             <h1 class="view-title">Introduction</h1>
-            <div id="intro-content">기록은 삶의 흔적을 남기는 일입니다.</div>
-        </div>
+            <div class="paper-text">나의 기록이 머무는 공간입니다.</div>
+        </section>
 
-        <div id="index-view" class="view-section">
-            <h1 class="view-title">Index List</h1>
-            <div id="index-list"></div>
-        </div>
+<section id="index-view" class="view-section">
+    <h1 class="view-title">Archive Index</h1>
+    <div id="index-list"></div>
+    <div id="pagination-container"></div>
+</section>
     </main>
 
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>

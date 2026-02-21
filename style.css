@@ -1,129 +1,101 @@
-/* --- Minimal B&W Theme --- */
 :root {
-    --bg-color: #ffffff;
-    --text-color: #000000;
-    --border-color: #000000;
+    font-size: 0.8em!important;
+    --bg-color:  #fff; /* #fdfcf0 따뜻한 종이색 */
+    --text-color: #2c2c2c;
+    --sunday-red: #d9534f;
+    --fc-event-text-color: #2c2c2c;
 }
+
+.fc .fc-button {font-size: 0.8em!important;}
+
+h1, h2, h3, h4, h5, h6 {font-size: 1.1em!important;}
 
 body {
     font-family: 'Noto Serif KR', serif;
     background-color: var(--bg-color);
     color: var(--text-color);
     margin: 0;
-    padding: 0;
 }
 
-/* --- 스마트 헤더 (스크롤 반응형) --- */
 #main-header {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background: var(--bg-color);
-    border-bottom: 1px solid var(--border-color);
-    transition: transform 0.4s ease-in-out; /* 부드러운 움직임 */
-    z-index: 1000;
+    position: fixed; top: 0; width: 100%;
+    background: var(--bg-color); border-bottom: 1px solid #eee;
+    z-index: 1000; transition: transform 0.4s ease;
+}
+.header-hide { transform: translateY(-100%); }
+
+#main-nav { display: flex; justify-content: center; gap: 50px; padding: 20px 0; }
+.nav-icon { cursor: pointer; text-align: center; }
+.nav-icon img { width: 24px; height: 24px; display: block; margin: 0 auto 5px; filter: grayscale(1); }
+.nav-icon span { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; }
+
+#content-container { max-width: 700px; margin: 120px auto 0; padding: 0 20px; }
+
+/* 캘린더 커스텀 */
+.fc-header-toolbar { display: flex !important; position: relative !important; justify-content: flex-end !important; margin-bottom: 50px !important; }
+.fc-toolbar-chunk:nth-child(2) { position: absolute !important; left: 50% !important; transform: translateX(-50%) !important; }
+.fc-day-sun .fc-col-header-cell-cushion, .fc-day-sun .fc-daygrid-day-number { color: var(--sunday-red) !important; }
+.fc-event {
+    background: transparent !important; border: none !important;
+    color: var(--text-color) !important; text-decoration: underline !important;
+    font-size: 0.85rem; cursor: pointer;
 }
 
-/* 헤더 숨김 클래스 */
-.header-hide {
-    transform: translateY(-100%);
+.fc-button:focus {box-shadow: none!important;}
+
+.fc-direction-ltr .fc-daygrid-event.fc-event-start, .fc-direction-rtl .fc-daygrid-event.fc-event-end {
+    margin-left: 10px!important;
+    margin-right: 10px!important;
 }
 
-#main-nav {
+/* 상세 뷰 스타일 */
+#detail-title { font-size: 1.8rem; font-weight: 400; margin-top: 20px; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #ddd; }
+#detail-content { line-height: 2.2; white-space: pre-wrap; font-size: 1.05rem; }
+
+.view-section { display: none; animation: fadeIn 0.4s; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* 인덱스 아이템 */
+.index-item { display: flex; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid #eee; text-decoration: none; color: inherit; }
+
+
+/* 페이지네이션 전체 컨테이너 */
+#pagination-container {
     display: flex;
     justify-content: center;
-    gap: 60px;
-    padding: 25px 0;
-}
-
-.nav-icon {
-    cursor: pointer;
-    text-align: center;
-    transition: opacity 0.3s;
-}
-
-.nav-icon img {
-    width: 36px; /* 아이콘 크기 조정 */
-    height: 36px;
-    display: block;
-    margin: 0 auto 8px;
-    filter: grayscale(100%); /* 모든 이미지를 흑백으로 강제 */
-}
-
-.nav-icon span {
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-.nav-icon:hover { opacity: 0.3; }
-
-/* --- 컨텐츠 레이아웃 --- */
-#content-container {
-    max-width: 850px;
-    margin: 0 auto;
-    padding: 180px 20px 100px; /* 헤더가 고정이므로 상단 여백 확보 */
-}
-
-.view-section { display: none; animation: fadeIn 0.5s ease-out; }
-#home-view { display: block; } /* 초기 화면 */
-
-/* --- FullCalendar 미니멀 커스텀 --- */
-.fc-header-toolbar {
-    display: flex !important;
-    position: relative !important;
-    justify-content: flex-end !important;
-    margin-bottom: 60px !important;
-}
-
-.fc-toolbar-chunk:nth-child(2) {
-    position: absolute !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-}
-
-.fc-toolbar-title { font-size: 1.1rem !important; letter-spacing: 4px; font-weight: 400 !important; }
-
-.fc-button {
-    background: transparent !important;
-    color: #000 !important;
-    border: 1px solid #000 !important;
-    border-radius: 0 !important;
-    font-size: 10px !important;
-    text-transform: uppercase;
-}
-.fc-button:hover { background: #000 !important; color: #fff !important; }
-
-.fc-event {
-    background: transparent !important;
-    border: none !important;
-    color: #000 !important;
-    text-decoration: underline !important;
-    font-size: 0.8rem;
-    cursor: pointer;
-}
-
-/* --- 상세 페이지 & 인덱스 --- */
-#detail-title { font-size: 1.8rem; font-weight: 400; margin-bottom: 50px; border-bottom: 1px solid #000; padding-bottom: 20px; }
-#detail-content { font-size: 1.05rem; white-space: pre-wrap; text-align: justify; }
-
-#back-button {
-    cursor: pointer;
-    border: 1px solid #000;
-    background: transparent;
-    font-size: 10px;
-    padding: 5px 12px;
-    margin-bottom: 40px;
-}
-
-.index-item {
-    display: flex;
-    justify-content: space-between;
+    align-items: center;
+    margin-top: 50px;
     padding: 20px 0;
-    border-bottom: 1px solid #eee;
-    text-decoration: none;
-    color: inherit;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* 개별 페이지 아이템 */
+.pg-item {
+    padding: 0 15px;
+    cursor: pointer;
+    color: #555;
+    border-left: 1px solid #ddd; /* 이미지 속 세로 구분선 */
+    transition: color 0.2s;
+}
+
+/* 첫 번째 아이템은 왼쪽 선 제거 */
+.pg-item:first-child {
+    border-left: none;
+}
+
+/* 현재 활성화된 페이지 (이미지처럼 굵게 표시) */
+.pg-active {
+    font-weight: 700;
+    color: #000;
+}
+
+/* 생략 표시 (...) */
+.pg-dots {
+    padding: 0 15px;
+    color: #999;
+    border-left: 1px solid #ddd;
+}
+
+.pg-item:hover {
+    color: #000;
+}
