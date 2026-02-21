@@ -1,0 +1,31 @@
+name: Auto Update Posts JSON
+
+on:
+  push:
+    paths:
+      - 'posts/**' # posts 폴더에 파일이 추가/수정될 때만 실행
+  workflow_dispatch: # 수동으로도 실행 가능하게 설정
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 깃허브에 파일을 쓸 수 있는 권한 부여
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run Update Script
+        run: python update_posts.py
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add posts.json
+          git commit -m "chore: auto-update posts.json [skip ci]" || exit 0
+          git push
