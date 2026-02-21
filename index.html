@@ -2,92 +2,184 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>자동 연동 캘린더</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zinsideme - Calendar Archive</title>
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* (중략: 이전 스타일 코드) */
-        #content-container { width: 90%; max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .nav-icon { cursor: pointer; display: inline-block; padding: 10px; border: 1px solid #ccc; margin: 5px; }
-        #detail-view { display: none; white-space: pre-wrap; line-height: 1.8; } /* pre-wrap으로 텍스트 줄바꿈 유지 */
+        :root {
+            --main-bg: #ffffff;
+            --text-color: #333;
+            --accent-color: #5a8fb9;
+        }
+
+        body {
+            font-family: 'Noto Serif KR', serif;
+            margin: 0;
+            background-color: #f4f4f4;
+            color: var(--text-color);
+        }
+
+        /* 상단 메뉴 스타일 */
+        #main-nav {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            padding: 30px 10px;
+            background: var(--main-bg);
+        }
+
+        .nav-icon {
+            width: 60px;
+            height: 60px;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 11px;
+            transition: transform 0.2s;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .nav-icon:hover { transform: translateY(-3px); border-color: var(--accent-color); }
+
+        /* 메인 컨테이너 */
+        #content-container {
+            max-width: 900px;
+            margin: 0 auto 50px;
+            background: var(--main-bg);
+            padding: 40px;
+            border-radius: 2px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            min-height: 600px;
+        }
+
+        /* 캘린더 커스텀 */
+        .fc { --fc-border-color: #eee; --fc-button-bg-color: #fff; --fc-button-text-color: #333; --fc-button-hover-bg-color: #f0f0f0; --fc-button-active-bg-color: #eee; --fc-button-border-color: #ddd; }
+        .fc-event { cursor: pointer; background-color: var(--accent-color) !important; border: none !important; padding: 2px 5px; }
+        .fc-toolbar-title { font-size: 1.5rem !important; font-weight: 700; }
+
+        /* 상세 페이지 뷰 */
+        #detail-view { display: none; animation: fadeIn 0.5s; }
+        #detail-title { font-size: 2rem; margin-bottom: 40px; text-align: left; border-bottom: 1px solid #eee; padding-bottom: 20px; }
+        #detail-content { font-size: 1.1rem; line-height: 2; white-space: pre-wrap; text-align: justify; color: #444; }
+        #back-button { margin-bottom: 30px; border: none; background: none; cursor: pointer; font-size: 1rem; color: #888; display: flex; align-items: center; gap: 5px; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <nav id="main-nav">
-        <div class="nav-icon" onclick="location.reload()">홈 (새로고침)</div>
-        <div class="nav-icon" onclick="showRandomPost()">랜덤 페이지</div>
+        <div class="nav-icon" onclick="showPage('home')"><span>홈</span></div>
+        <div class="nav-icon" onclick="showPage('intro')"><span>소개</span></div>
+        <div class="nav-icon" onclick="showPage('index')"><span>인덱스</span></div>
+        <div class="nav-icon" onclick="showRandomPost()"><span>랜덤</span></div>
     </nav>
 
     <div id="content-container">
-        <div id="calendar-view"><div id='calendar'></div></div>
+        <div id="calendar-view">
+            <div id='calendar'></div>
+        </div>
+
         <div id="detail-view">
-            <button onclick="document.getElementById('detail-view').style.display='none'; document.getElementById('calendar-view').style.display='block';">뒤로가기</button>
-            <h2 id="detail-title"></h2>
-            <hr>
+            <button id="back-button" onclick="showPage('home')">← 돌아가기</button>
+            <h1 id="detail-title"></h1>
             <div id="detail-content"></div>
         </div>
+
+        <div id="intro-view" style="display:none;"><h1>소개</h1><p>준비 중입니다.</p></div>
+        <div id="index-view" style="display:none;"><h1>인덱스</h1><p>준비 중입니다.</p></div>
     </div>
 
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
     <script>
-        const USERNAME = 'your-github-id'; // 본인 아이디로 수정
-        const REPO = 'your-repo-name';     // 리포지토리 이름으로 수정
+        const USERNAME = 'woozinius';
+        const REPO = 'zinsideme';
+        const FOLDER = 'posts';
         let allPosts = [];
+        let calendar;
 
         document.addEventListener('DOMContentLoaded', async function() {
+            initCalendar();
+            await loadPosts();
+        });
+
+        function initCalendar() {
             const calendarEl = document.getElementById('calendar');
-            const calendar = new FullCalendar.Calendar(calendarEl, {
+            calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                events: async function(info, successCallback, failureCallback) {
-                    // 1. GitHub에서 파일 목록 가져오기
-                    allPosts = await loadPostsFromGithub();
-                    
-                    // 2. FullCalendar 형식에 맞게 변환
-                    const events = allPosts.map(post => ({
-                        title: post.title,
-                        start: post.date,
-                        extendedProps: { downloadUrl: post.download_url }
-                    }));
-                    successCallback(events);
-                },
-                eventClick: async function(info) {
-                    const url = info.event.extendedProps.downloadUrl;
-                    const title = info.event.title;
-                    
-                    // 3. 파일 내용 가져와서 표시
-                    const content = await fetchFileContent(url);
-                    showDetail(title, content);
+                locale: 'ko',
+                headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+                events: [],
+                eventClick: function(info) {
+                    showPostDetail(info.event.extendedProps.fileData);
                 }
             });
             calendar.render();
-        });
-
-        async function loadPostsFromGithub() {
-            const apiUrl = `https://api.github.com/repos/${USERNAME}/${REPO}/contents/posts`;
-            const response = await fetch(apiUrl);
-            const files = await response.json();
-            return files.filter(f => f.name.endsWith('.txt')).map(f => {
-                const parts = f.name.replace('.txt', '').split('_');
-                return { date: parts[0], title: parts[1] || '제목없음', download_url: f.download_url };
-            });
         }
 
-        async function fetchFileContent(url) {
-            const response = await fetch(url);
-            return await response.text();
+        async function loadPosts() {
+            const apiUrl = `https://api.github.com/repos/${USERNAME}/${REPO}/contents/${FOLDER}`;
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error('파일을 가져올 수 없습니다.');
+                const files = await response.json();
+
+                allPosts = files.filter(f => f.name.endsWith('.txt')).map(f => {
+                    // 파일명 규칙: YYYY-MM-DD_제목.txt
+                    const fileName = f.name.replace('.txt', '');
+                    const separatorIndex = fileName.indexOf('_');
+                    return {
+                        date: separatorIndex !== -1 ? fileName.substring(0, separatorIndex) : '',
+                        title: separatorIndex !== -1 ? fileName.substring(separatorIndex + 1) : fileName,
+                        download_url: f.download_url
+                    };
+                });
+
+                // 캘린더에 이벤트 추가
+                const events = allPosts.map(post => ({
+                    title: post.title,
+                    start: post.date,
+                    extendedProps: { fileData: post }
+                }));
+                calendar.addEventSource(events);
+
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
 
-        function showDetail(title, content) {
-            document.getElementById('calendar-view').style.display = 'none';
-            document.getElementById('detail-view').style.display = 'block';
-            document.getElementById('detail-title').innerText = title;
-            document.getElementById('detail-content').innerText = content;
+        async function showPostDetail(post) {
+            const response = await fetch(post.download_url);
+            const text = await response.text();
+
+            document.getElementById('detail-title').innerText = post.title;
+            document.getElementById('detail-content').innerText = text;
+            showPage('detail');
+        }
+
+        function showPage(page) {
+            const views = ['calendar-view', 'detail-view', 'intro-view', 'index-view'];
+            views.forEach(v => document.getElementById(v).style.display = 'none');
+            
+            if(page === 'home') {
+                document.getElementById('calendar-view').style.display = 'block';
+                calendar.updateSize();
+            } else {
+                document.getElementById(page + '-view').style.display = 'block';
+            }
+            window.scrollTo(0, 0);
         }
 
         function showRandomPost() {
             if (allPosts.length > 0) {
                 const random = allPosts[Math.floor(Math.random() * allPosts.length)];
-                fetchFileContent(random.download_url).then(content => showDetail(random.title, content));
+                showPostDetail(random);
             }
         }
     </script>
