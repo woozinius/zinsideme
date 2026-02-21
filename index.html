@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>자동 연동 캘린더</title>
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
+    <style>
+        /* (중략: 이전 스타일 코드) */
+        #content-container { width: 90%; max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .nav-icon { cursor: pointer; display: inline-block; padding: 10px; border: 1px solid #ccc; margin: 5px; }
+        #detail-view { display: none; white-space: pre-wrap; line-height: 1.8; } /* pre-wrap으로 텍스트 줄바꿈 유지 */
+    </style>
+</head>
+<body>
+
+    <nav id="main-nav">
+        <div class="nav-icon" onclick="location.reload()">홈 (새로고침)</div>
+        <div class="nav-icon" onclick="showRandomPost()">랜덤 페이지</div>
+    </nav>
+
+    <div id="content-container">
+        <div id="calendar-view"><div id='calendar'></div></div>
+        <div id="detail-view">
+            <button onclick="document.getElementById('detail-view').style.display='none'; document.getElementById('calendar-view').style.display='block';">뒤로가기</button>
+            <h2 id="detail-title"></h2>
+            <hr>
+            <div id="detail-content"></div>
+        </div>
+    </div>
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+    <script>
+        const USERNAME = 'your-github-id'; // 본인 아이디로 수정
+        const REPO = 'your-repo-name';     // 리포지토리 이름으로 수정
+        let allPosts = [];
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: async function(info, successCallback, failureCallback) {
+                    // 1. GitHub에서 파일 목록 가져오기
+                    allPosts = await loadPostsFromGithub();
+                    
+                    // 2. FullCalendar 형식에 맞게 변환
+                    const events = allPosts.map(post => ({
+                        title: post.title,
+                        start: post.date,
+                        extendedProps: { downloadUrl: post.download_url }
+                    }));
+                    successCallback(events);
+                },
+                eventClick: async function(info) {
+                    const url = info.event.extendedProps.downloadUrl;
+                    const title = info.event.title;
+                    
+                    // 3. 파일 내용 가져와서 표시
+                    const content = await fetchFileContent(url);
+                    showDetail(title, content);
+                }
+            });
+            calendar.render();
+        });
+
+        async function loadPostsFromGithub() {
+            const apiUrl = `https://api.github.com/repos/${USERNAME}/${REPO}/contents/posts`;
+            const response = await fetch(apiUrl);
+            const files = await response.json();
+            return files.filter(f => f.name.endsWith('.txt')).map(f => {
+                const parts = f.name.replace('.txt', '').split('_');
+                return { date: parts[0], title: parts[1] || '제목없음', download_url: f.download_url };
+            });
+        }
+
+        async function fetchFileContent(url) {
+            const response = await fetch(url);
+            return await response.text();
+        }
+
+        function showDetail(title, content) {
+            document.getElementById('calendar-view').style.display = 'none';
+            document.getElementById('detail-view').style.display = 'block';
+            document.getElementById('detail-title').innerText = title;
+            document.getElementById('detail-content').innerText = content;
+        }
+
+        function showRandomPost() {
+            if (allPosts.length > 0) {
+                const random = allPosts[Math.floor(Math.random() * allPosts.length)];
+                fetchFileContent(random.download_url).then(content => showDetail(random.title, content));
+            }
+        }
+    </script>
+</body>
+</html>
